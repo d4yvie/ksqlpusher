@@ -38,6 +38,6 @@ public class Main {
 	    System.out.println(String.format("%s %s %s %s", columnOne, columnTwo, columnThree, columnFour));
 	    
 	    Client client = KsqlClientFactory.retrieveClient();
-		// do insert queries
+		// record instantiation, do batching, do insert queries, et voilà
 	}
 }
