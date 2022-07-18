@@ -25,17 +25,19 @@ public class Main {
 		Iterable<CSVRecord> records = CSVFormat.RFC4180.parse(in);
 		StreamSupport.stream(records.spliterator(), false)
 			.forEach(this::handleRecord);
-		// Send requests with the client by following the other examples
-		Client client = Ksql.createClient();
-		// Terminate any open connections and close the client
+		
+		Client client = KsqlClientRefactory.retrieveClient();
 		client.close();
 	}
-	
+
 	public void handleRecord(CSVRecord record) {
 		String columnOne = record.get(0);
 	    String columnTwo = record.get(1);
 	    String columnThree = record.get(2);
 	    String columnFour = record.get(3);
 	    System.out.println(String.format("%s %s %s %s", columnOne, columnTwo, columnThree, columnFour));
+	    
+	    Client client = KsqlClientRefactory.retrieveClient();
+		// do insert queries
 	}
 }
