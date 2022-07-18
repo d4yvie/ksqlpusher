@@ -21,14 +21,12 @@ public class Main {
 	}
 
 	public void doIt() throws IOException {
-		ClientOptions options = ClientOptions.create().setHost(KSQLDB_SERVER_HOST).setPort(KSQLDB_SERVER_HOST_PORT);
-		Client client = Client.create(options);
 		Reader in = new FileReader("src/main/resources/my.csv");
 		Iterable<CSVRecord> records = CSVFormat.RFC4180.parse(in);
 		StreamSupport.stream(records.spliterator(), false)
 			.forEach(this::handleRecord);
 		// Send requests with the client by following the other examples
-		
+		Client client = Ksql.createClient();
 		// Terminate any open connections and close the client
 		client.close();
 	}
