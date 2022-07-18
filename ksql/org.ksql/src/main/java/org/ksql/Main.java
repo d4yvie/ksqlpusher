@@ -26,7 +26,7 @@ public class Main {
 		StreamSupport.stream(records.spliterator(), false)
 			.forEach(this::handleRecord);
 		
-		Client client = KsqlClientRefactory.retrieveClient();
+		Client client = KsqlClientFactory.retrieveClient();
 		client.close();
 	}
 
@@ -37,7 +37,7 @@ public class Main {
 	    String columnFour = record.get(3);
 	    System.out.println(String.format("%s %s %s %s", columnOne, columnTwo, columnThree, columnFour));
 	    
-	    Client client = KsqlClientRefactory.retrieveClient();
+	    Client client = KsqlClientFactory.retrieveClient();
 		// do insert queries
 	}
 }
