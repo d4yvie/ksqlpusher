@@ -23,6 +23,7 @@ import io.confluent.ksql.api.client.KsqlObject;
 public class Main {
 	
 	private static String TABLE = "creditcard_data";
+	private static int BUFFER_SIZE = 200000;
 
 	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
 		new Main().doIt();
@@ -40,7 +41,7 @@ public class Main {
 //			.collect(CompletableFutureUtil.collectResult());
 
 		// reactive handling
-		InsertsPublisher insertsPublisher = new InsertsPublisher();
+		InsertsPublisher insertsPublisher = new InsertsPublisher(BUFFER_SIZE);
 		AcksPublisher acksPublisher = client.streamInserts(TABLE, insertsPublisher).get();
 		List<Boolean> successful = StreamSupport.stream(records.spliterator(), false)
 			.map(this::recordToObject)
