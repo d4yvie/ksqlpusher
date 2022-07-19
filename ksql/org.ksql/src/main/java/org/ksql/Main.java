@@ -16,9 +16,6 @@ import io.confluent.ksql.api.client.KsqlObject;
 
 public class Main {
 
-	public static String KSQLDB_SERVER_HOST = "localhost";
-	public static int KSQLDB_SERVER_HOST_PORT = 8088;
-
 	public static void main(String[] args) throws IOException {
 		new Main().doIt();
 	}
