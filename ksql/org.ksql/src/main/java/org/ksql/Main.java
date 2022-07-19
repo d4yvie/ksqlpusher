@@ -43,11 +43,11 @@ public class Main {
 		// reactive handling
 		InsertsPublisher insertsPublisher = new InsertsPublisher(BUFFER_SIZE);
 		AcksPublisher acksPublisher = client.streamInserts(TABLE, insertsPublisher).get();
+		acksPublisher.subscribe(new AcksSubscriber());
 		List<Boolean> successful = StreamSupport.stream(records.spliterator(), false)
 			.map(this::recordToObject)
 			.map(record -> this.handleRecordReactive(record, insertsPublisher))
 			.collect(Collectors.toList());
-		acksPublisher.subscribe(new AcksSubscriber());
 
 		insertsPublisher.complete();
 
