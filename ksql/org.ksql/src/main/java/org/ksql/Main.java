@@ -4,6 +4,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -33,19 +34,20 @@ public class Main {
 		Client client = KsqlClientFactory.retrieveClient();
 		
 		// not reactive handling
-		StreamSupport.stream(records.spliterator(), false)
-			.map(this::recordToObject)
-			.map(this::handleRecord)
-			.collect(CompletableFutureUtil.collectResult());
-
-		// reactive handling
-//		InsertsPublisher insertsPublisher = new InsertsPublisher();
-//		AcksPublisher acksPublisher = client.streamInserts(TABLE, insertsPublisher).get();
 //		StreamSupport.stream(records.spliterator(), false)
 //			.map(this::recordToObject)
-//			.map(record -> this.handleRecordReactive(record, insertsPublisher))
-//			.collect(Collectors.toList());
-//		insertsPublisher.complete();
+//			.map(this::handleRecord)
+//			.collect(CompletableFutureUtil.collectResult());
+
+		// reactive handling
+		InsertsPublisher insertsPublisher = new InsertsPublisher();
+		AcksPublisher acksPublisher = client.streamInserts(TABLE, insertsPublisher).get();
+		List<Boolean> successful = StreamSupport.stream(records.spliterator(), false)
+			.map(this::recordToObject)
+			.map(record -> this.handleRecordReactive(record, insertsPublisher))
+			.collect(Collectors.toList());
+		
+		insertsPublisher.complete();
 
 		client.close();
 	}
