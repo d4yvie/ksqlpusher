@@ -3,6 +3,8 @@ package org.ksql;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.csv.CSVFormat;
@@ -10,6 +12,7 @@ import org.apache.commons.csv.CSVRecord;
 
 import io.confluent.ksql.api.client.Client;
 import io.confluent.ksql.api.client.ClientOptions;
+import io.confluent.ksql.api.client.KsqlObject;
 
 public class Main {
 
@@ -21,23 +24,30 @@ public class Main {
 	}
 
 	public void doIt() throws IOException {
-		Reader in = new FileReader("src/main/resources/my.csv");
+		Reader in = new FileReader("src/main/resources/creditcard.csv");
 		Iterable<CSVRecord> records = CSVFormat.RFC4180.parse(in);
 		StreamSupport.stream(records.spliterator(), false)
-			.forEach(this::handleRecord);
-		
+			.map(this::handleRecord)
+			.collect(CompletableFutureUtil.collectResult());
+
 		Client client = KsqlClientFactory.retrieveClient();
 		client.close();
 	}
 
-	public void handleRecord(CSVRecord record) {
+	public CompletableFuture<Void> handleRecord(CSVRecord record) {
 		String columnOne = record.get(0);
-	    String columnTwo = record.get(1);
-	    String columnThree = record.get(2);
-	    String columnFour = record.get(3);
-	    System.out.println(String.format("%s %s %s %s", columnOne, columnTwo, columnThree, columnFour));
-	    
-	    Client client = KsqlClientFactory.retrieveClient();
-		// record instantiation, do batching, do insert queries, et voilà
+		String columnTwo = record.get(1);
+		String columnThree = record.get(29);
+		String columnFour = record.get(30);
+		// System.out.println(String.format("%s %s %s %s", columnOne, columnTwo, columnThree, columnFour));
+
+		Client client = KsqlClientFactory.retrieveClient();
+		KsqlObject row = new KsqlObject().put("Time", columnTwo).put("Amount", columnThree).put("Fraud_check", columnFour);
+		try {
+			return client.insertInto("ORDERS", row);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return CompletableFuture.allOf(null);
+		}
 	}
 }
