@@ -36,15 +36,14 @@ public class Main {
 
 	public CompletableFuture<Void> handleRecord(CSVRecord record) {
 		String columnOne = record.get(0);
-		String columnTwo = record.get(1);
 		String columnThree = record.get(29);
 		String columnFour = record.get(30);
 		// System.out.println(String.format("%s %s %s %s", columnOne, columnTwo, columnThree, columnFour));
 
 		Client client = KsqlClientFactory.retrieveClient();
-		KsqlObject row = new KsqlObject().put("Time", columnTwo).put("Amount", columnThree).put("Fraud_check", columnFour);
+		KsqlObject row = new KsqlObject().put("Time", columnOne).put("Amount", columnThree).put("Fraud_check", columnFour);
 		try {
-			return client.insertInto("ORDERS", row);
+			return client.insertInto("DA_TABLE", row);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return CompletableFuture.allOf(null);
