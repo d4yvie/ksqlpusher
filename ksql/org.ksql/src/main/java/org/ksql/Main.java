@@ -47,7 +47,8 @@ public class Main {
 			.map(this::recordToObject)
 			.map(record -> this.handleRecordReactive(record, insertsPublisher))
 			.collect(Collectors.toList());
-		
+		acksPublisher.subscribe(new AcksSubscriber());
+
 		insertsPublisher.complete();
 
 		client.close();
