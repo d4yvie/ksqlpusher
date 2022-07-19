@@ -64,7 +64,7 @@ public class Main {
 		}
 	}
 
-	public boolean handleRecordReactive(KsqlObject record, InsertsPublisher acksPublisher) {
-		return acksPublisher.accept(record);
+	public boolean handleRecordReactive(KsqlObject record, InsertsPublisher insertsPublisher) {
+		return insertsPublisher.accept(record);
 	}
 }
