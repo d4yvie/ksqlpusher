@@ -6,6 +6,7 @@ import java.io.Reader;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -34,11 +35,15 @@ public class Main {
 	}
 
 	public void doIt() throws IOException, InterruptedException, ExecutionException {
+		long t1 = System.nanoTime();
 		Reader in = new FileReader("src/main/resources/creditcard.csv");
 		Iterable<CSVRecord> records = CSVFormat.RFC4180.parse(in);
 		Stream<CSVRecord> recordsStream = StreamSupport.stream(records.spliterator(), false);
+		System.out.println("STARTING INSERTS");
 		// sendThrottling(recordsStream);
 		sendReactiveBatched(recordsStream);
+		System.out.println(String.format("Success! Parsing and Inserting took %d seconds", TimeUnit.SECONDS.convert(System.nanoTime() - t1, TimeUnit.NANOSECONDS)));
+		System.out.println("SHUTTING DOWN");	
 		KsqlClientFactory.retrieveClient().close();
 	}
 
