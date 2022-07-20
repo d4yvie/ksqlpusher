@@ -47,13 +47,14 @@ public class Main {
 		List<KsqlObject> allRecords = recordsStream
 				.map(this::recordToObject)
 				.collect(Collectors.toList());
-		List<List<KsqlObject>> recordBatches = Partition.ofSize(allRecords, 150);
-		recordBatches.stream().flatMap(batch -> {
+		Partition.ofSubLists(allRecords, 150)
+			.map(List::stream)
+			.flatMap(batch -> {
 			InsertsPublisher insertsPublisher = new InsertsPublisher(BUFFER_SIZE);
 			try {
 				AcksPublisher acksPublisher = client.streamInserts(STREAM, insertsPublisher).get();
 				acksPublisher.subscribe(new AcksSubscriber());
-				List<Boolean> results = batch.stream()
+				List<Boolean> results = batch
 						.map(ksqlObject -> insertRecordReactive(ksqlObject, insertsPublisher))
 						.collect(Collectors.toList());
 				insertsPublisher.complete();
