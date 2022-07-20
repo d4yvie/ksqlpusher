@@ -52,6 +52,8 @@ public class Main {
 		List<KsqlObject> allRecords = recordsStream
 				.map(this::recordToObject)
 				.collect(Collectors.toList());
+		long t1 = System.nanoTime();
+		System.out.println("STARTING REACTIVE INSERTS");
 		Partition.ofSubLists(allRecords, 150)
 			.map(List::stream)
 			.flatMap(batch -> {
@@ -69,6 +71,7 @@ public class Main {
 			}
 			return Stream.of();
 		}).collect(Collectors.toList());
+		System.out.println(String.format("Success! Reactive Inserting took %d seconds", TimeUnit.SECONDS.convert(System.nanoTime() - t1, TimeUnit.NANOSECONDS)));
 	}
 
 	public void sendThrottling(Stream<CSVRecord> recordsStream) throws InterruptedException, ExecutionException {
