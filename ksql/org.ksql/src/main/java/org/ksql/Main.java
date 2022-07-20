@@ -69,7 +69,6 @@ public class Main {
 		acksPublisher.subscribe(new AcksSubscriber());
 		List<Boolean> successful = StreamSupport.stream(records.spliterator(), false)
 			.map(this::recordToObject)
-			
 			.map(record -> this.handleRecordReactive(record, insertsPublisher))
 			.collect(Collectors.toList());
 	}
