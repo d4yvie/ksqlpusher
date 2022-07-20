@@ -13,7 +13,7 @@ public class AcksSubscriber implements Subscriber<InsertAck> {
 
   @Override
   public synchronized void onSubscribe(Subscription subscription) {
-    System.out.println("Subscriber is subscribed.");
+    // System.out.println("Subscriber is subscribed.");
     this.subscription = subscription;
 
     // Request the first ack
@@ -22,7 +22,7 @@ public class AcksSubscriber implements Subscriber<InsertAck> {
 
   @Override
   public synchronized void onNext(InsertAck ack) {
-    System.out.println("Received an ack for insert number: " + ack.seqNum());
+    // System.out.println("Received an ack for insert number: " + ack.seqNum());
     subscription.request(1);
   }
 
