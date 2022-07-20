@@ -53,9 +53,9 @@ public class Main {
 				.map(this::recordToObject)
 				.collect(Collectors.toList());
 		long t1 = System.nanoTime();
-		Stream<List<KsqlObject>> partitions = Partition.ofSubLists(allRecords, 150);
+		Stream<List<KsqlObject>> batches = Batcher.ofSubLists(allRecords, 150);
 		System.out.println("STARTING REACTIVE INSERTS");
-		partitions
+		batches
 			.map(List::stream)
 			.flatMap(batch -> {
 			InsertsPublisher insertsPublisher = new InsertsPublisher(BUFFER_SIZE);

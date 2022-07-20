@@ -6,18 +6,18 @@ import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public final class Partition<T> extends AbstractList<List<T>> {
+public final class Batcher<T> extends AbstractList<List<T>> {
 
     private final List<T> list;
     private final int chunkSize;
 
-    public Partition(List<T> list, int chunkSize) {
+    public Batcher(List<T> list, int chunkSize) {
         this.list = new ArrayList<>(list);
         this.chunkSize = chunkSize;
     }
 
-    public static <T> Partition<T> ofSize(List<T> list, int chunkSize) {
-        return new Partition<>(list, chunkSize);
+    public static <T> Batcher<T> ofSize(List<T> list, int chunkSize) {
+        return new Batcher<>(list, chunkSize);
     }
 
     @Override
