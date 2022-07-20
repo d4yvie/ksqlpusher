@@ -7,13 +7,11 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
-
-import com.google.common.collect.Iterators;
-import com.google.common.collect.UnmodifiableIterator;
 
 import io.confluent.ksql.api.client.AcksPublisher;
 import io.confluent.ksql.api.client.Client;
@@ -38,27 +36,34 @@ public class Main {
 	public void doIt() throws IOException, InterruptedException, ExecutionException {
 		Reader in = new FileReader("src/main/resources/creditcard.csv");
 		Iterable<CSVRecord> records = CSVFormat.RFC4180.parse(in);
-		
 		// sendReactive(records);
-		
-		send(records);
-
+		// send(records);
+		sendReactiveBatched(records);
 		KsqlClientFactory.retrieveClient().close();
 	}
 	
 	public void sendReactiveBatched(Iterable<CSVRecord> records) throws InterruptedException, ExecutionException { 
-		UnmodifiableIterator<List<CSVRecord>> batchIterator = Iterators.partition(records.iterator(), 200);
 		Client client = KsqlClientFactory.retrieveClient();
-		InsertsPublisher insertsPublisher = new InsertsPublisher(BUFFER_SIZE);
-		AcksPublisher acksPublisher = client.streamInserts(TABLE, insertsPublisher).get();
-		acksPublisher.subscribe(new AcksSubscriber());
-		List<Boolean> successful = StreamSupport.stream(records.spliterator(), false)
+		List<KsqlObject> allObjects = StreamSupport.stream(records.spliterator(), false)
 			.map(this::recordToObject)
-			
-			.map(record -> this.handleRecordReactive(record, insertsPublisher))
 			.collect(Collectors.toList());
+		List<List<KsqlObject>> batches = Partition.ofSize(allObjects, 150);
+		batches.stream()
+			.flatMap(batch -> {
+				InsertsPublisher insertsPublisher = new InsertsPublisher(BUFFER_SIZE);
+				try {
+					AcksPublisher acksPublisher = client.streamInserts(TABLE, insertsPublisher).get();
+					acksPublisher.subscribe(new AcksSubscriber());
+					List<Boolean> results = batch.stream().map(ksqlObject -> handleRecordReactive(ksqlObject, insertsPublisher)).collect(Collectors.toList());
+					insertsPublisher.complete();
+					return results.stream();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return Stream.of();
+			}).collect(Collectors.toList());
 	}
-	
+
 	public void sendReactive(Iterable<CSVRecord> records) throws InterruptedException, ExecutionException { 
 		Client client = KsqlClientFactory.retrieveClient();
 		InsertsPublisher insertsPublisher = new InsertsPublisher(BUFFER_SIZE);
@@ -158,12 +163,6 @@ public class Main {
 	}
 
 	public boolean handleRecordReactive(KsqlObject record, InsertsPublisher insertsPublisher) {
-		try {
-			Thread.sleep(TIME_BETWEEN_REQUEST_IN_MS);
-			return insertsPublisher.accept(record);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			return insertsPublisher.accept(record);
-		}
+		return insertsPublisher.accept(record);
 	}
 }

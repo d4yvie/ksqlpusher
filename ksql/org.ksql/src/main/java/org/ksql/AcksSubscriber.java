@@ -23,8 +23,6 @@ public class AcksSubscriber implements Subscriber<InsertAck> {
   @Override
   public synchronized void onNext(InsertAck ack) {
     System.out.println("Received an ack for insert number: " + ack.seqNum());
-
-    // Request the next ack
     subscription.request(1);
   }
 
