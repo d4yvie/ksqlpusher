@@ -36,17 +36,19 @@ public class Main {
 	public void doIt() throws IOException, InterruptedException, ExecutionException {
 		Reader in = new FileReader("src/main/resources/creditcard.csv");
 		Iterable<CSVRecord> records = CSVFormat.RFC4180.parse(in);
-		// sendThrottling(records);
-		sendReactiveBatched(records);
+		Stream<CSVRecord> recordsStream = StreamSupport.stream(records.spliterator(), false);
+		// sendThrottling(recordsStream);
+		sendReactiveBatched(recordsStream);
 		KsqlClientFactory.retrieveClient().close();
 	}
 
-	public void sendReactiveBatched(Iterable<CSVRecord> records) throws InterruptedException, ExecutionException {
+	public void sendReactiveBatched(Stream<CSVRecord> recordsStream) throws InterruptedException, ExecutionException {
 		Client client = KsqlClientFactory.retrieveClient();
-		List<KsqlObject> allObjects = StreamSupport.stream(records.spliterator(), false).map(this::recordToObject)
+		List<KsqlObject> allRecords = recordsStream
+				.map(this::recordToObject)
 				.collect(Collectors.toList());
-		List<List<KsqlObject>> batches = Partition.ofSize(allObjects, 150);
-		batches.stream().flatMap(batch -> {
+		List<List<KsqlObject>> recordBatches = Partition.ofSize(allRecords, 150);
+		recordBatches.stream().flatMap(batch -> {
 			InsertsPublisher insertsPublisher = new InsertsPublisher(BUFFER_SIZE);
 			try {
 				AcksPublisher acksPublisher = client.streamInserts(STREAM, insertsPublisher).get();
@@ -63,9 +65,10 @@ public class Main {
 		}).collect(Collectors.toList());
 	}
 
-	public void sendThrottling(Iterable<CSVRecord> records) throws InterruptedException, ExecutionException {
+	public void sendThrottling(Stream<CSVRecord> recordsStream) throws InterruptedException, ExecutionException {
 		Client client = KsqlClientFactory.retrieveClient();
-		StreamSupport.stream(records.spliterator(), false).map(this::recordToObject)
+		recordsStream
+				.map(this::recordToObject)
 				.map(record -> this.insertRecordThrottling(record)).collect(CompletableFutureUtil.collectResult());
 	}
 

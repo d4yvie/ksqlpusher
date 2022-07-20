@@ -33,6 +33,6 @@ public class AcksSubscriber implements Subscriber<InsertAck> {
 
   @Override
   public synchronized void onComplete() {
-    System.out.println("Inserts stream has been closed.");
+    // System.out.println("Inserts stream has been closed.");
   }
 }
