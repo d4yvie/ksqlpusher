@@ -26,10 +26,10 @@ import io.confluent.ksql.api.client.TopicInfo;
 
 public class Main {
 
-	private static String STREAM = "creditcard_data";
-	private static int BUFFER_SIZE = 2000000;
-	private static int REACTIVE_BATCH_SIZE = 150;
-	private static int TIME_BETWEEN_REQUEST_IN_MS = 1;
+	private static final String STREAM = "creditcard_data";
+	private static final int BUFFER_SIZE = 2000000;
+	private static final int REACTIVE_BATCH_SIZE = 150;
+	private static final int TIME_BETWEEN_REQUEST_IN_MS = 1;
 
 	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
 		new Main().doIt();
