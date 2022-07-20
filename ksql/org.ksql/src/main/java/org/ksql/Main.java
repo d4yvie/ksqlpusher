@@ -28,6 +28,7 @@ public class Main {
 
 	private static String STREAM = "creditcard_data";
 	private static int BUFFER_SIZE = 2000000;
+	private static int REACTIVE_BATCH_SIZE = 150;
 	private static int TIME_BETWEEN_REQUEST_IN_MS = 1;
 
 	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
@@ -53,7 +54,7 @@ public class Main {
 				.map(this::recordToObject)
 				.collect(Collectors.toList());
 		long t1 = System.nanoTime();
-		Stream<List<KsqlObject>> batches = Batcher.ofSubLists(allRecords, 150);
+		Stream<List<KsqlObject>> batches = Batcher.ofSubLists(allRecords, REACTIVE_BATCH_SIZE);
 		System.out.println("STARTING REACTIVE INSERTS");
 		batches
 			.map(List::stream)
