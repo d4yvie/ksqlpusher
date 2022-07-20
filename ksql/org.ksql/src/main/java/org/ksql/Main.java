@@ -24,9 +24,9 @@ import io.confluent.ksql.api.client.TableInfo;
 import io.confluent.ksql.api.client.TopicInfo;
 
 public class Main {
-	
-	private static String TABLE = "creditcard_data";
-	private static int BUFFER_SIZE = 2000000000;
+
+	private static String STREAM = "creditcard_data";
+	private static int BUFFER_SIZE = 2000000;
 	private static int TIME_BETWEEN_REQUEST_IN_MS = 1;
 
 	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
@@ -36,51 +36,37 @@ public class Main {
 	public void doIt() throws IOException, InterruptedException, ExecutionException {
 		Reader in = new FileReader("src/main/resources/creditcard.csv");
 		Iterable<CSVRecord> records = CSVFormat.RFC4180.parse(in);
-		// sendReactive(records);
-		// send(records);
+		// sendThrottling(records);
 		sendReactiveBatched(records);
 		KsqlClientFactory.retrieveClient().close();
 	}
-	
-	public void sendReactiveBatched(Iterable<CSVRecord> records) throws InterruptedException, ExecutionException { 
+
+	public void sendReactiveBatched(Iterable<CSVRecord> records) throws InterruptedException, ExecutionException {
 		Client client = KsqlClientFactory.retrieveClient();
-		List<KsqlObject> allObjects = StreamSupport.stream(records.spliterator(), false)
-			.map(this::recordToObject)
-			.collect(Collectors.toList());
+		List<KsqlObject> allObjects = StreamSupport.stream(records.spliterator(), false).map(this::recordToObject)
+				.collect(Collectors.toList());
 		List<List<KsqlObject>> batches = Partition.ofSize(allObjects, 150);
-		batches.stream()
-			.flatMap(batch -> {
-				InsertsPublisher insertsPublisher = new InsertsPublisher(BUFFER_SIZE);
-				try {
-					AcksPublisher acksPublisher = client.streamInserts(TABLE, insertsPublisher).get();
-					acksPublisher.subscribe(new AcksSubscriber());
-					List<Boolean> results = batch.stream().map(ksqlObject -> handleRecordReactive(ksqlObject, insertsPublisher)).collect(Collectors.toList());
-					insertsPublisher.complete();
-					return results.stream();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				return Stream.of();
-			}).collect(Collectors.toList());
+		batches.stream().flatMap(batch -> {
+			InsertsPublisher insertsPublisher = new InsertsPublisher(BUFFER_SIZE);
+			try {
+				AcksPublisher acksPublisher = client.streamInserts(STREAM, insertsPublisher).get();
+				acksPublisher.subscribe(new AcksSubscriber());
+				List<Boolean> results = batch.stream()
+						.map(ksqlObject -> insertRecordReactive(ksqlObject, insertsPublisher))
+						.collect(Collectors.toList());
+				insertsPublisher.complete();
+				return results.stream();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return Stream.of();
+		}).collect(Collectors.toList());
 	}
 
-	public void sendReactive(Iterable<CSVRecord> records) throws InterruptedException, ExecutionException { 
+	public void sendThrottling(Iterable<CSVRecord> records) throws InterruptedException, ExecutionException {
 		Client client = KsqlClientFactory.retrieveClient();
-		InsertsPublisher insertsPublisher = new InsertsPublisher(BUFFER_SIZE);
-		AcksPublisher acksPublisher = client.streamInserts(TABLE, insertsPublisher).get();
-		acksPublisher.subscribe(new AcksSubscriber());
-		List<Boolean> successful = StreamSupport.stream(records.spliterator(), false)
-			.map(this::recordToObject)
-			.map(record -> this.handleRecordReactive(record, insertsPublisher))
-			.collect(Collectors.toList());
-	}
-
-	public void send(Iterable<CSVRecord> records) throws InterruptedException, ExecutionException { 
-		Client client = KsqlClientFactory.retrieveClient();
-		StreamSupport.stream(records.spliterator(), false)
-			.map(this::recordToObject)
-			.map(record -> this.handleRecord(record))
-			.collect(CompletableFutureUtil.collectResult());
+		StreamSupport.stream(records.spliterator(), false).map(this::recordToObject)
+				.map(record -> this.insertRecordThrottling(record)).collect(CompletableFutureUtil.collectResult());
 	}
 
 	public KsqlObject recordToObject(CSVRecord record) {
@@ -90,79 +76,64 @@ public class Main {
 		return new KsqlObject().put("Time", columnOne).put("Amount", columnThree).put("Fraud_check", columnFour);
 	}
 
-	public CompletableFuture<Void> handleRecord(KsqlObject row) {
+	public CompletableFuture<Void> insertRecordThrottling(KsqlObject row) {
 		Client client = KsqlClientFactory.retrieveClient();
 		try {
 			Thread.sleep(TIME_BETWEEN_REQUEST_IN_MS);
-			return client.insertInto(TABLE, row);
+			return client.insertInto(STREAM, row);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return CompletableFuture.allOf(null);
 		}
 	}
-	
+
+	public boolean insertRecordReactive(KsqlObject record, InsertsPublisher insertsPublisher) {
+		return insertsPublisher.accept(record);
+	}
+
 	public void runSelect() {
-		String selectQuery = String.format("SELECT * FROM %s EMIT CHANGES;", TABLE);
-		
+		String selectQuery = String.format("SELECT * FROM %s EMIT CHANGES;", STREAM);
+
 		Client client = KsqlClientFactory.retrieveClient();
-		client.streamQuery(selectQuery)
-	    .thenAccept(streamedQueryResult -> {
-	      System.out.println("Query has started. Query ID: " + streamedQueryResult.queryID());
-	      RowSubscriber subscriber = new RowSubscriber();
-	      streamedQueryResult.subscribe(subscriber);
-	    }).exceptionally(e -> {
-	      System.out.println("Request failed: " + e);
-	      return null;
-	    });
-		
+		client.streamQuery(selectQuery).thenAccept(streamedQueryResult -> {
+			System.out.println("Query has started. Query ID: " + streamedQueryResult.queryID());
+			RowSubscriber subscriber = new RowSubscriber();
+			streamedQueryResult.subscribe(subscriber);
+		}).exceptionally(e -> {
+			System.out.println("Request failed: " + e);
+			return null;
+		});
+
 		System.out.println(selectQuery);
 	}
 
 	public void listInfo() throws InterruptedException, ExecutionException {
-		
+
 		Client client = KsqlClientFactory.retrieveClient();
-		
+
 		List<StreamInfo> streams = client.listStreams().get();
 		for (StreamInfo stream : streams) {
-		  System.out.println(
-		     stream.getName() 
-		     + " " + stream.getTopic() 
-		     + " " + stream.getKeyFormat()
-		     + " " + stream.getValueFormat()
-		     + " " + stream.isWindowed()
-		  );
+			System.out.println(stream.getName() + " " + stream.getTopic() + " " + stream.getKeyFormat() + " "
+					+ stream.getValueFormat() + " " + stream.isWindowed());
 		}
-		
+
 		List<TableInfo> tables = client.listTables().get();
 		for (TableInfo table : tables) {
-		  System.out.println(
-		       table.getName() 
-		       + " " + table.getTopic() 
-		       + " " + table.getKeyFormat()
-		       + " " + table.getValueFormat()
-		       + " " + table.isWindowed()
-		    );
+			System.out.println(table.getName() + " " + table.getTopic() + " " + table.getKeyFormat() + " "
+					+ table.getValueFormat() + " " + table.isWindowed());
 		}
-		
+
 		List<TopicInfo> topics = client.listTopics().get();
 		for (TopicInfo topic : topics) {
-		  System.out.println(
-		       topic.getName() 
-		       + " " + topic.getPartitions() 
-		       + " " + topic.getReplicasPerPartition()
-		  );
+			System.out.println(topic.getName() + " " + topic.getPartitions() + " " + topic.getReplicasPerPartition());
 		}
-		
+
 		List<QueryInfo> queries = client.listQueries().get();
 		for (QueryInfo query : queries) {
-		  System.out.println(query.getQueryType() + " " + query.getId());
-		  if (query.getQueryType() == QueryType.PERSISTENT) {
-		    System.out.println(query.getSink().get() + " " + query.getSinkTopic().get());
-		  }
+			System.out.println(query.getQueryType() + " " + query.getId());
+			if (query.getQueryType() == QueryType.PERSISTENT) {
+				System.out.println(query.getSink().get() + " " + query.getSinkTopic().get());
+			}
 		}
-	}
-
-	public boolean handleRecordReactive(KsqlObject record, InsertsPublisher insertsPublisher) {
-		return insertsPublisher.accept(record);
 	}
 }
