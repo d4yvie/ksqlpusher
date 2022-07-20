@@ -49,9 +49,6 @@ public class Main {
 	public void sendReactiveBatched(Iterable<CSVRecord> records) throws InterruptedException, ExecutionException { 
 		UnmodifiableIterator<List<CSVRecord>> batchIterator = Iterators.partition(records.iterator(), 200);
 		Client client = KsqlClientFactory.retrieveClient();
-		
-		
-		
 		InsertsPublisher insertsPublisher = new InsertsPublisher(BUFFER_SIZE);
 		AcksPublisher acksPublisher = client.streamInserts(TABLE, insertsPublisher).get();
 		acksPublisher.subscribe(new AcksSubscriber());
