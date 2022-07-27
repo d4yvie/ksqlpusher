@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 import org.apache.commons.csv.CSVRecord;
 import org.sql.pusher.SqlPusher;
 
-public class TimeScalePusher implements SqlPusher {
+public class SimpleTimeScalePusher implements SqlPusher {
 	
 	private final Connection connection = TimeScaleClientFactory.getConnection();
 
