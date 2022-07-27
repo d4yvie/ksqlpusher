@@ -14,6 +14,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.sql.pusher.ksql.KsqlClientFactory;
 import org.sql.pusher.ksql.ReactiveKsqlPusher;
 import org.sql.pusher.ksql.RowSubscriber;
+import org.sql.pusher.timescale.BulkTimeScalePusher;
 import org.sql.pusher.timescale.SimpleTimeScalePusher;
 
 import io.confluent.ksql.api.client.Client;
@@ -27,7 +28,7 @@ public class Main {
 
 	private final String STREAM = "creditcard_data";
 	private final boolean LOOP_FOREVER = false;
-	private final SqlPusher SQL_PUSHER = new SimpleTimeScalePusher();// new ReactiveKsqlPusher(); // new ThrottlingKsqlPusher();
+	private final SqlPusher SQL_PUSHER = new BulkTimeScalePusher();// new ReactiveKsqlPusher(); // new ThrottlingKsqlPusher();
 	// private final int THREAD_AMOUNT = 1;
 	// 	private final ForkJoinExecutor EXECUTOR = new ForkJoinExecutor(THREAD_AMOUNT);
 
