@@ -8,7 +8,7 @@ import org.sql.pusher.SqlPusher;
 
 public class TimeScalePusher implements SqlPusher {
 	
-	public final Connection connection = TimeScaleClientFactory.getConnection();
+	private final Connection connection = TimeScaleClientFactory.getConnection();
 
 	@Override
 	public void sendCsvToKsql(Stream<CSVRecord> recordsStream, String stream) {

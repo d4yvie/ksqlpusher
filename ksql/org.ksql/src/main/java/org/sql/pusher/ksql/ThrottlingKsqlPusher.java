@@ -11,7 +11,7 @@ import org.sql.pusher.SqlPusher;
 import io.confluent.ksql.api.client.Client;
 import io.confluent.ksql.api.client.KsqlObject;
 
-public class ThrottlingKsqlPusher implements SqlPusher, RecordTransformer {
+public class ThrottlingKsqlPusher implements SqlPusher, KsqlCreditCardRecordTransformer {
 
 	private final int TIME_BETWEEN_REQUEST_IN_MS = 1;
 

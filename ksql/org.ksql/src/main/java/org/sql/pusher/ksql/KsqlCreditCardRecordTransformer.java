@@ -4,7 +4,7 @@ import org.apache.commons.csv.CSVRecord;
 
 import io.confluent.ksql.api.client.KsqlObject;
 
-public interface RecordTransformer {
+public interface KsqlCreditCardRecordTransformer {
 	public default KsqlObject recordToObject(CSVRecord record) {
 		String columnOne = record.get(0);
 		String columnThree = record.get(29);
