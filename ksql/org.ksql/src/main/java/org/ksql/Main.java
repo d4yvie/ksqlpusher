@@ -23,7 +23,7 @@ public class Main {
 
 	private final String STREAM = "creditcard_data";
 	private final boolean LOOP_FOREVER = false;
-	private final KsqlPusher KSQL_PUSHER = new ReactiveKsqlPusher(); // new ThrottlingKsqlPusher();
+	private final SqlPusher KSQL_PUSHER = new ReactiveKsqlPusher(); // new ThrottlingKsqlPusher();
 	// private final int THREAD_AMOUNT = 1;
 	// 	private final ForkJoinExecutor EXECUTOR = new ForkJoinExecutor(THREAD_AMOUNT);
 

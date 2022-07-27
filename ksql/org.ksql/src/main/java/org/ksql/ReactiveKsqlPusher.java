@@ -12,7 +12,7 @@ import io.confluent.ksql.api.client.Client;
 import io.confluent.ksql.api.client.InsertsPublisher;
 import io.confluent.ksql.api.client.KsqlObject;
 
-public class ReactiveKsqlPusher implements KsqlPusher, RecordTransformer {
+public class ReactiveKsqlPusher implements SqlPusher, RecordTransformer {
 
 	private final int BUFFER_SIZE = 2000000;
 	private final int REACTIVE_BATCH_SIZE = 150;
