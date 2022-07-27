@@ -17,17 +17,21 @@ public class SimpleTimeScalePusher implements SqlPusher {
 		long t1 = System.nanoTime();
 		System.out.println("STARTING SIMPLE TIMESCALE INSERTS");
 		String queryTemplate = String.format("INSERT INTO %s (Time, Amount, Fraud_check) VALUES (?, ?, ?)", stream);
-		recordsStream.forEach(record -> {
-			try (var stmt = connection.prepareStatement(queryTemplate)) {
-		        stmt.setString(1, record.get(0));
-		        stmt.setString(2, record.get(29));
-		        stmt.setString(3, record.get(30));
-		        stmt.executeUpdate();
-		    } catch (SQLException e) {
-				e.printStackTrace();
-			}
-		});
-		System.out.println(String.format("Success! Simple TimeScale Inserting took %d seconds", TimeUnit.SECONDS.convert(System.nanoTime() - t1, TimeUnit.NANOSECONDS)));
+		try (var stmt = connection.prepareStatement(queryTemplate)) {
+			recordsStream.forEach(record -> {
+				try {
+					stmt.setString(1, record.get(0));
+					stmt.setString(2, record.get(29));
+					stmt.setString(3, record.get(30));
+					stmt.executeUpdate();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println(String.format("Success! Simple TimeScale Inserting took %d seconds",
+				TimeUnit.SECONDS.convert(System.nanoTime() - t1, TimeUnit.NANOSECONDS)));
 	}
-
 }
