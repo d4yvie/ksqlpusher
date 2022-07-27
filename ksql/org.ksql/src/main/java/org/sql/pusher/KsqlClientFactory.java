@@ -1,4 +1,4 @@
-package org.ksql;
+package org.sql.pusher;
 
 import io.confluent.ksql.api.client.Client;
 import io.confluent.ksql.api.client.ClientOptions;

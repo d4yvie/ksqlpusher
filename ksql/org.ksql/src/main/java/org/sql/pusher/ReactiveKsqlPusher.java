@@ -1,4 +1,4 @@
-package org.ksql;
+package org.sql.pusher;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
