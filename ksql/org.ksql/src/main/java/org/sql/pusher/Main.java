@@ -14,6 +14,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.sql.pusher.ksql.KsqlClientFactory;
 import org.sql.pusher.ksql.ReactiveKsqlPusher;
 import org.sql.pusher.ksql.RowSubscriber;
+import org.sql.pusher.timescale.TimeScalePusher;
 
 import io.confluent.ksql.api.client.Client;
 import io.confluent.ksql.api.client.QueryInfo;
@@ -26,7 +27,7 @@ public class Main {
 
 	private final String STREAM = "creditcard_data";
 	private final boolean LOOP_FOREVER = false;
-	private final SqlPusher KSQL_PUSHER = new ReactiveKsqlPusher(); // new ThrottlingKsqlPusher();
+	private final SqlPusher SQL_PUSHER = new TimeScalePusher();// new ReactiveKsqlPusher(); // new ThrottlingKsqlPusher();
 	// private final int THREAD_AMOUNT = 1;
 	// 	private final ForkJoinExecutor EXECUTOR = new ForkJoinExecutor(THREAD_AMOUNT);
 
@@ -50,7 +51,7 @@ public class Main {
 		Iterable<CSVRecord> records = CSVFormat.RFC4180.parse(in);
 		Stream<CSVRecord> recordsStream = StreamSupport.stream(records.spliterator(), false);
 		System.out.println("STARTING INSERTS");
-		KSQL_PUSHER.sendCsvToKsql(recordsStream, STREAM);
+		SQL_PUSHER.sendCsvToKsql(recordsStream, STREAM);
 		System.out.println(String.format("Success! Parsing and Inserting took %d seconds", TimeUnit.SECONDS.convert(System.nanoTime() - t1, TimeUnit.NANOSECONDS)));
 	}
 
