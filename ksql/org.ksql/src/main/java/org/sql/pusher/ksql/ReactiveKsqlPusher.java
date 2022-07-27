@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.csv.CSVRecord;
+import org.sql.pusher.Batcher;
 import org.sql.pusher.SqlPusher;
 
 import io.confluent.ksql.api.client.AcksPublisher;

@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.apache.commons.csv.CSVRecord;
+import org.sql.pusher.CompletableFutureUtil;
 import org.sql.pusher.SqlPusher;
 
 import io.confluent.ksql.api.client.Client;
