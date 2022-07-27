@@ -19,7 +19,7 @@ public class BulkTimeScalePusher implements SqlPusher {
 		long t1 = System.nanoTime();
 		System.out.println("STARTING BULK TIMESCALE INSERTS");
 		String queryTemplate = String.format("INSERT INTO %s (Time, Amount, Fraud_check) VALUES ", stream);
-		List<String> values = recordsStream.skip(1)
+		List<String> values = recordsStream.skip(1) // dont insert line one
 			.map(record -> String.format("(%s, %s, %s)", record.get(0), record.get(29), record.get(30)))
 			.collect(Collectors.toList());
 		Stream<List<String>> batches = Batcher.ofSubLists(values, 500);
