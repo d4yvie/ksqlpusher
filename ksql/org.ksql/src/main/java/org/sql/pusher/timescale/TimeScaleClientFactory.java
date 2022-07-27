@@ -26,7 +26,7 @@ public class TimeScaleClientFactory {
 		Connection conn = getConnection();
 		var createSensorTableQuery = """
 				           CREATE TABLE creditcard_data (
-				           	Time VARCHAR PRIMARY KEY,
+				           	Time VARCHAR,
 				Amount VARCHAR,
 				Fraud_check VARCHAR
 				           )
