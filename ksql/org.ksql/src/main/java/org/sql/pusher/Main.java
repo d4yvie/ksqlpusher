@@ -50,7 +50,7 @@ public class Main {
 		long t1 = System.nanoTime();
 		Reader in = new FileReader("src/main/resources/creditcard.csv");
 		Iterable<CSVRecord> records = CSVFormat.RFC4180.parse(in);
-		Stream<CSVRecord> recordsStream = StreamSupport.stream(records.spliterator(), false);
+		Stream<CSVRecord> recordsStream = StreamSupport.stream(records.spliterator(), false).skip(1); // skip header
 		System.out.println("STARTING INSERTS");
 		SQL_PUSHER.sendCsvToKsql(recordsStream, STREAM);
 		System.out.println(String.format("Success! Parsing and Inserting took %d seconds", TimeUnit.SECONDS.convert(System.nanoTime() - t1, TimeUnit.NANOSECONDS)));
