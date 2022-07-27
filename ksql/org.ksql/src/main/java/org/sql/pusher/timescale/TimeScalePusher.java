@@ -1,8 +1,9 @@
-package org.sql.pusher;
+package org.sql.pusher.timescale;
 
 import java.util.stream.Stream;
 
 import org.apache.commons.csv.CSVRecord;
+import org.sql.pusher.SqlPusher;
 
 public class TimeScalePusher implements SqlPusher {
 

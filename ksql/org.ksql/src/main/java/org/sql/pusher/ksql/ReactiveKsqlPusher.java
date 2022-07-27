@@ -1,4 +1,4 @@
-package org.sql.pusher;
+package org.sql.pusher.ksql;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.csv.CSVRecord;
+import org.sql.pusher.SqlPusher;
 
 import io.confluent.ksql.api.client.AcksPublisher;
 import io.confluent.ksql.api.client.Client;

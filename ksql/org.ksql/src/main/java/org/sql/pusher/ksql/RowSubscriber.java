@@ -1,4 +1,4 @@
-package org.sql.pusher;
+package org.sql.pusher.ksql;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;

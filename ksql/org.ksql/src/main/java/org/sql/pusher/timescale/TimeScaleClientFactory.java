@@ -1,4 +1,4 @@
-package org.sql.pusher;
+package org.sql.pusher.timescale;
 
 public class TimeScaleClientFactory {
 
