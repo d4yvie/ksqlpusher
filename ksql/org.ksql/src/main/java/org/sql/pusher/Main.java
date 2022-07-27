@@ -28,7 +28,7 @@ public class Main {
 
 	private final String STREAM = "creditcard_data";
 	private final boolean LOOP_FOREVER = false;
-	private final SqlPusher SQL_PUSHER = new BulkTimeScalePusher();// new ReactiveKsqlPusher(); // new ThrottlingKsqlPusher();
+	private final SqlPusher SQL_PUSHER = new BulkTimeScalePusher(); // new ReactiveKsqlPusher();
 	// private final int THREAD_AMOUNT = 1;
 	// 	private final ForkJoinExecutor EXECUTOR = new ForkJoinExecutor(THREAD_AMOUNT);
 
@@ -39,14 +39,14 @@ public class Main {
 	public void setup() throws IOException, InterruptedException, ExecutionException {
 		do {
 			try {
-				pushToKsql();
+				pushToSql();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} while (LOOP_FOREVER);
 	}
 
-	public void pushToKsql() throws Exception {
+	public void pushToSql() throws Exception {
 		long t1 = System.nanoTime();
 		Reader in = new FileReader("src/main/resources/creditcard.csv");
 		Iterable<CSVRecord> records = CSVFormat.RFC4180.parse(in);
