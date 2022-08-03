@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.csv.CSVRecord;
 import org.sql.pusher.Batcher;
+import org.sql.pusher.ForkJoinExecutor;
 import org.sql.pusher.SqlPusher;
 
 public class BulkTimeScalePusher implements SqlPusher {
@@ -20,11 +21,12 @@ public class BulkTimeScalePusher implements SqlPusher {
 		System.out.println("STARTING BULK TIMESCALE INSERTS");
 		String queryTemplate = String.format("INSERT INTO %s (Time, Amount, Fraud_check) VALUES ", stream);
 		List<String> values = recordsStream
-			.map(record -> String.format("(%s, %s, %s)", record.get(0), record.get(29), record.get(30)))
-			.collect(Collectors.toList());
+				.map(record -> String.format("(%s, %s, %s)", record.get(0), record.get(29), record.get(30)))
+				.collect(Collectors.toList());
 		Stream<List<String>> batches = Batcher.ofSubLists(values, 500);
 		batches.forEach(batch -> {
-			String concatenatedBatch = batch.stream().reduce("", (a, b) -> a.isEmpty() ? b : String.format("%s, %s", a, b));
+			String concatenatedBatch = batch.stream().reduce("",
+					(a, b) -> a.isEmpty() ? b : String.format("%s, %s", a, b));
 			String query = queryTemplate + concatenatedBatch + ";";
 			try (var stmt = connection.createStatement()) {
 				stmt.execute(query);

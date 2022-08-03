@@ -15,7 +15,6 @@ import org.sql.pusher.ksql.KsqlClientFactory;
 import org.sql.pusher.ksql.ReactiveKsqlPusher;
 import org.sql.pusher.ksql.RowSubscriber;
 import org.sql.pusher.timescale.BulkTimeScalePusher;
-import org.sql.pusher.timescale.SimpleTimeScalePusher;
 
 import io.confluent.ksql.api.client.Client;
 import io.confluent.ksql.api.client.QueryInfo;
@@ -28,9 +27,7 @@ public class Main {
 
 	private final String STREAM = "creditcard_data";
 	private final boolean LOOP_FOREVER = false;
-	private final SqlPusher SQL_PUSHER = new BulkTimeScalePusher(); // new ReactiveKsqlPusher();
-	// private final int THREAD_AMOUNT = 1;
-	// 	private final ForkJoinExecutor EXECUTOR = new ForkJoinExecutor(THREAD_AMOUNT);
+	private final SqlPusher SQL_PUSHER = new ReactiveKsqlPusher(); // new BulkTimeScalePusher();
 
 	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
 		new Main().setup();
@@ -48,55 +45,55 @@ public class Main {
 
 	public void pushToSql() throws Exception {
 		long t1 = System.nanoTime();
-		Reader in = new FileReader("src/main/resources/creditcard.csv");
+		Reader in = new FileReader("src/main/resources/fraudTest.csv");
 		Iterable<CSVRecord> records = CSVFormat.RFC4180.parse(in);
 		Stream<CSVRecord> recordsStream = StreamSupport.stream(records.spliterator(), false).skip(1); // skip header
 		System.out.println("STARTING INSERTS");
 		SQL_PUSHER.sendCsvToKsql(recordsStream, STREAM);
 		System.out.println(String.format("Success! Parsing and Inserting took %d seconds", TimeUnit.SECONDS.convert(System.nanoTime() - t1, TimeUnit.NANOSECONDS)));
 	}
-
-	public void runSelect() {
-		String selectQuery = String.format("SELECT * FROM %s EMIT CHANGES;", STREAM);
-		Client client = KsqlClientFactory.retrieveClient();
-		client.streamQuery(selectQuery).thenAccept(streamedQueryResult -> {
-			System.out.println("Query has started. Query ID: " + streamedQueryResult.queryID());
-			RowSubscriber subscriber = new RowSubscriber();
-			streamedQueryResult.subscribe(subscriber);
-		}).exceptionally(e -> {
-			System.out.println("Request failed: " + e);
-			return null;
-		});
-		System.out.println(selectQuery);
-	}
-
-	public void listInfo() throws InterruptedException, ExecutionException {
-
-		Client client = KsqlClientFactory.retrieveClient();
-
-		List<StreamInfo> streams = client.listStreams().get();
-		for (StreamInfo stream : streams) {
-			System.out.println(stream.getName() + " " + stream.getTopic() + " " + stream.getKeyFormat() + " "
-					+ stream.getValueFormat() + " " + stream.isWindowed());
-		}
-
-		List<TableInfo> tables = client.listTables().get();
-		for (TableInfo table : tables) {
-			System.out.println(table.getName() + " " + table.getTopic() + " " + table.getKeyFormat() + " "
-					+ table.getValueFormat() + " " + table.isWindowed());
-		}
-
-		List<TopicInfo> topics = client.listTopics().get();
-		for (TopicInfo topic : topics) {
-			System.out.println(topic.getName() + " " + topic.getPartitions() + " " + topic.getReplicasPerPartition());
-		}
-
-		List<QueryInfo> queries = client.listQueries().get();
-		for (QueryInfo query : queries) {
-			System.out.println(query.getQueryType() + " " + query.getId());
-			if (query.getQueryType() == QueryType.PERSISTENT) {
-				System.out.println(query.getSink().get() + " " + query.getSinkTopic().get());
-			}
-		}
-	}
+//
+//	public void runSelect() {
+//		String selectQuery = String.format("SELECT * FROM %s EMIT CHANGES;", STREAM);
+//		Client client = KsqlClientFactory.retrieveClient();
+//		client.streamQuery(selectQuery).thenAccept(streamedQueryResult -> {
+//			System.out.println("Query has started. Query ID: " + streamedQueryResult.queryID());
+//			RowSubscriber subscriber = new RowSubscriber();
+//			streamedQueryResult.subscribe(subscriber);
+//		}).exceptionally(e -> {
+//			System.out.println("Request failed: " + e);
+//			return null;
+//		});
+//		System.out.println(selectQuery);
+//	}
+//
+//	public void listInfo() throws InterruptedException, ExecutionException {
+//
+//		Client client = KsqlClientFactory.retrieveClient();
+//
+//		List<StreamInfo> streams = client.listStreams().get();
+//		for (StreamInfo stream : streams) {
+//			System.out.println(stream.getName() + " " + stream.getTopic() + " " + stream.getKeyFormat() + " "
+//					+ stream.getValueFormat() + " " + stream.isWindowed());
+//		}
+//
+//		List<TableInfo> tables = client.listTables().get();
+//		for (TableInfo table : tables) {
+//			System.out.println(table.getName() + " " + table.getTopic() + " " + table.getKeyFormat() + " "
+//					+ table.getValueFormat() + " " + table.isWindowed());
+//		}
+//
+//		List<TopicInfo> topics = client.listTopics().get();
+//		for (TopicInfo topic : topics) {
+//			System.out.println(topic.getName() + " " + topic.getPartitions() + " " + topic.getReplicasPerPartition());
+//		}
+//
+//		List<QueryInfo> queries = client.listQueries().get();
+//		for (QueryInfo query : queries) {
+//			System.out.println(query.getQueryType() + " " + query.getId());
+//			if (query.getQueryType() == QueryType.PERSISTENT) {
+//				System.out.println(query.getSink().get() + " " + query.getSinkTopic().get());
+//			}
+//		}
+//	}
 }
