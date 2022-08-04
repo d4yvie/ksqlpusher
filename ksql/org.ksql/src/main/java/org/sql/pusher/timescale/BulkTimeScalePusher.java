@@ -39,8 +39,8 @@ public class BulkTimeScalePusher implements SqlPusher {
 				TimeUnit.SECONDS.convert(transformTime, TimeUnit.NANOSECONDS)));
 		Stream<List<String>> batches = Batcher.ofSubLists(values, 500);
 		batches.forEach(batch -> {
-			String concatenatedBatch = batch.stream().reduce("",
-					(a, b) -> a.isEmpty() ? b : String.format("%s, %s", a, b));
+			String concatenatedBatch = batch.stream().reduce(new StringBuilder(),
+					(a, b) -> a.toString().isEmpty() ? a.append(b) : a.append(",").append(b), (a, b) -> b).toString();
 			String query = queryTemplate + concatenatedBatch + ";";
 			try (var stmt = connection.createStatement()) {
 				stmt.execute(query);
