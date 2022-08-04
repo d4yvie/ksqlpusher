@@ -23,6 +23,7 @@ public class BulkTimeScalePusher implements SqlPusher {
 		String queryTemplate = String.format("INSERT INTO %s (Entrynumber, time, cc_num, merchant, category, amt, firstname , lastname , gender , street , city , state , zip , lat , long , city_pop , job , trans_num , unix_time , merch_lat , merch_long , is_fraud ) VALUES ", stream);
 		Stream<Object[]> result = recordsStream.map(val -> val.toList())
 				.map(val -> val.toArray(new String[22])).map(arr -> {
+					// transform text-columns
 					Stream.of(1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 16 ,17)
 						.forEach(val -> {
 							arr[val] = toSQLString(arr[val]);
