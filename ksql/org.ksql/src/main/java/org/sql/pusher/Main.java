@@ -27,7 +27,7 @@ public class Main {
 
 	private final String STREAM = "creditcard_data";
 	private final boolean LOOP_FOREVER = false;
-	private final SqlPusher SQL_PUSHER = new ReactiveKsqlPusher(); // new BulkTimeScalePusher();
+	private final SqlPusher SQL_PUSHER = new BulkTimeScalePusher(); // new ReactiveKsqlPusher(); // 
 
 	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
 		new Main().setup();

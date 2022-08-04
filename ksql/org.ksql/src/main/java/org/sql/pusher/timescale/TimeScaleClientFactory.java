@@ -25,10 +25,12 @@ public class TimeScaleClientFactory {
 
 	public static void main(String... args) throws SQLException {
 		Connection conn = getConnection();
-		// """DROP TABLE creditcard_data"""
 		var createSensorTableQuery = 
+//				"""
+//						DROP TABLE creditcard_data
+//				""";
 				"""
-				CREATE TABLE creditcard_data (Entrynumber integer, TIMESTAMPTZ timestamp, cc_num varchar, merchant varchar, category varchar, amt double precision, firstname varchar, lastname varchar, gender varchar, street varchar, city varchar, state varchar, zip integer, lat double precision, long double precision, city_pop integer, job varchar, trans_num varchar, unix_time integer, merch_lat double precision, merch_long double precision, is_fraud integer)  
+				CREATE TABLE creditcard_data (Entrynumber integer, time TIMESTAMPTZ, cc_num text, merchant text, category text, amt double precision, firstname text, lastname text, gender text, street text, city text, state text, zip integer, lat double precision, long double precision, city_pop integer, job text, trans_num text, unix_time integer, merch_lat double precision, merch_long double precision, is_fraud integer) 
 				""";
 
 		try (var stmt = conn.createStatement()) {
