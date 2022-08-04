@@ -19,12 +19,16 @@ public class BulkTimeScalePusher implements SqlPusher {
 	public void sendCsvToKsql(Stream<CSVRecord> recordsStream, String stream) {
 		long t1 = System.nanoTime();
 		System.out.println("STARTING BULK TIMESCALE INSERTS");
-		String queryTemplate = String.format("INSERT INTO %s (Time, Amount, Fraud_check) VALUES ", stream);
+		String queryTemplate = String.format("INSERT INTO %s (Entrynumber, time, cc_num, merchant, category, amt, firstname , lastname , gender , street , city , state , zip , lat , long , city_pop , job , trans_num , unix_time , merch_lat , merch_long , is_fraud ) VALUES ", stream);
 		Stream<Object[]> result = recordsStream.map(val -> val.toList())
 				.map(val -> val.toArray(new String[22])).map(arr -> {
+					Stream.of(1, 3, 4, 6, 7, 8, 9, 10, 11, 16 ,17)
+						.forEach(val -> {
+							arr[val] = toSQLString(arr[val]);
+						});
 					return arr;
 				});
-		String valueTemplate = createRowTemplate(20);
+		String valueTemplate = createRowTemplate(21);
 		List<String> values = result
 				.map(record -> String.format(valueTemplate, record))
 				.collect(Collectors.toList());
@@ -41,6 +45,10 @@ public class BulkTimeScalePusher implements SqlPusher {
 		});
 		System.out.println(String.format("Success! Bulk TimeScale Inserting took %d seconds",
 				TimeUnit.SECONDS.convert(System.nanoTime() - t1, TimeUnit.NANOSECONDS)));
+	}
+	
+	private String toSQLString(String val) {
+		return "'" + val + "'";
 	}
 
 	private String createRowTemplate(int columns) {
