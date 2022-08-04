@@ -1,7 +1,10 @@
 package org.sql.pusher;
 
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -45,8 +48,8 @@ public class Main {
 
 	public void pushToSql() throws Exception {
 		long t1 = System.nanoTime();
-		Reader in = new FileReader("src/main/resources/fraudTest.csv");
-		Iterable<CSVRecord> records = CSVFormat.RFC4180.parse(in);
+		InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("fraudTest.csv");
+		Iterable<CSVRecord> records = CSVFormat.RFC4180.parse(new BufferedReader(new InputStreamReader(in)));
 		Stream<CSVRecord> recordsStream = StreamSupport.stream(records.spliterator(), false).skip(1); // skip header
 		System.out.println("STARTING INSERTS");
 		SQL_PUSHER.sendCsvToKsql(recordsStream, STREAM);
