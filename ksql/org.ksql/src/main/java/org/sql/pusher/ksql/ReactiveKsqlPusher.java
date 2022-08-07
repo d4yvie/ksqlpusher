@@ -25,8 +25,8 @@ public class ReactiveKsqlPusher implements SqlPusher, KsqlCreditCardRecordTransf
 		List<KsqlObject> allRecords = recordsStream
 				.map(this::recordToObject)
 				.collect(Collectors.toList());
-		long t1 = System.nanoTime();
 		Stream<List<KsqlObject>> batches = Batcher.ofSubLists(allRecords, REACTIVE_BATCH_SIZE);
+		long t1 = System.nanoTime();
 		System.out.println("STARTING REACTIVE INSERTS");
 		batches
 			.map(List::stream)
